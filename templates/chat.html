@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Medical Chatbot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h2>Health Assistant</h2>
+    </div>
+    <div id="chat-window" class="chat-window"></div>
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="user-input" placeholder="Type symptoms or questions..." autocomplete="off" required />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('chat-form');
+    const inputField = document.getElementById('user-input');
+    const chatWindow = document.getElementById('chat-window');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userText = inputField.value.trim();
+      if (!userText) return;
+      addMessage('user', userText);
+      inputField.value = '';
+      try {
+        const response = await fetch('/get', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: new URLSearchParams({ msg: userText })
+        });
+        const botReply = await response.text();
+        addMessage('bot', botReply);
+      } catch (err) {
+        addMessage('bot', 'Sorry, something went wrong.');
+      }
+    });
+
+    function addMessage(sender, text) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message', sender);
+      msgDiv.innerText = text;
+      chatWindow.appendChild(msgDiv);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+  </script>
+</body>
+</html>
